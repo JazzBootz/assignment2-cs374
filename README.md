@@ -1,1 +1,1 @@
-# assignment2-cs374
+Compile Command: gcc -o movies main.c | Execution Command: ./movies
