@@ -1,8 +1,8 @@
+#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
@@ -13,11 +13,15 @@
 #define PREFIX "movie"
 
 
+//creates txt files and appends movie names to them
 void createFiles(struct dirent* filePtr, char* dirName) {
     DIR* newDir = opendir(dirName);
+    //calls function from parse_movies.c to make movies linked list used from
+    //assignment one
     struct Movie* list = makeLinkedList(filePtr->d_name);
 
-    while (list != NULL) {
+    while (list != NULL) { 
+        //converts integer to string and concatonates string for file name
         char syear[5];
         sprintf(syear, "%d", list->year);
         char* ext = ".txt";
@@ -26,19 +30,21 @@ void createFiles(struct dirent* filePtr, char* dirName) {
         strcpy(fileName, syear);
         strcat(fileName, ext);
         
+        //makes and writes to file with year.txt
         char buffer[10000];
         snprintf(buffer, sizeof(buffer), "%s/%s", dirName, fileName);
         FILE* fptr = fopen(buffer, "a");
         fprintf(fptr, "%s\n", list->title);
-        chmod(fileName, S_IRUSR | S_IWUSR | S_IRGRP);
+        chmod(buffer, S_IRUSR | S_IWUSR | S_IRGRP);
         fclose(fptr);
 
-        list = list->next;
+        list = list->next; //iteration
     }
     closedir(newDir);
 }
 
 
+//makes directory with ONID + movies + random number
 void processFile(struct dirent* filePtr) {
     printf("\nNow processing the chosen file named %s.\n", filePtr->d_name);
     
@@ -66,6 +72,7 @@ void processFile(struct dirent* filePtr) {
 }
 
 
+//function if largest file option is picked
 void largestFile() {
     struct dirent* filePtr; //pointer for file iteration
     DIR* currDir = opendir(".");
@@ -82,6 +89,7 @@ void largestFile() {
         char* point; 
         if((point = strrchr(filePtr->d_name,'.')) != NULL ) {
             if(strcmp(point,".csv") == 0) { //checks if file ends in .csv
+                //saves current largest file size
                 if (largestFileSize <= dirStat.st_size) {
                     largestFileSize = dirStat.st_size;
                     largestFile = filePtr;
@@ -94,6 +102,7 @@ void largestFile() {
 }
 
 
+//function if smallest file option is picked
 void smallestFile() {
     struct dirent* filePtr; //pointer for file iteration
     DIR* currDir = opendir(".");
@@ -110,6 +119,7 @@ void smallestFile() {
         char* point; 
         if((point = strrchr(filePtr->d_name,'.')) != NULL ) {
             if(strcmp(point,".csv") == 0) { //checks if file ends in .csv
+                //saves current smallest file size
                 if (smallestFileSize >= dirStat.st_size) {
                     smallestFileSize = dirStat.st_size;
                     smallestFile = filePtr;
@@ -122,6 +132,7 @@ void smallestFile() {
 }
 
 
+//function if specific file option is picked
 bool specificFile() {
     char* answer;
     printf("\nEnter the complete file name: ");
@@ -129,8 +140,9 @@ bool specificFile() {
 
     struct dirent* filePtr;
     DIR* currDir = opendir(".");
-    bool notFoundDir = true;
-
+    bool notFoundDir = true; //error handling
+    
+    //checks files for match of user input
     while ((filePtr = readdir(currDir)) != NULL) {
         if (strcmp(filePtr->d_name, answer) == 0) {
             notFoundDir = false;
@@ -139,6 +151,7 @@ bool specificFile() {
             break;
         }
     }
+    //executes if file not found in current directory
     if (notFoundDir) {
         printf("\nInputed file name does not exist. Please try again\n");
         closedir(currDir);
@@ -148,6 +161,7 @@ bool specificFile() {
 }
 
 
+//function for printing the menu for choices
 void printMenu() {
     bool running = true;
     while (running) {
@@ -171,12 +185,14 @@ void printMenu() {
                 running = false;
             }
         } else {
+            //executes if invalid input
             printf("\nInvalid input. Please try again.");
         }
     }
 }
 
 
+//main function. prints first menu.
 int main() {
     bool running = true;
     while (running) {
@@ -191,6 +207,7 @@ int main() {
         } else if (answer == 2) {
             running = false;
         } else {
+            //executes if invalid input
             printf("\nInvalid input. Please try again.\n\n");
         }
     }
